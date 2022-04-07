@@ -5,6 +5,7 @@ use cosmwasm_std::{
     SubMsgResult, WasmMsg,
 };
 use cw2::set_contract_version;
+use cw_utils::parse_execute_response_data;
 
 use crate::error::ContractError;
 use crate::msg::{EchoDataMsg, ExecuteMsg, InstantiateMsg};
@@ -22,7 +23,11 @@ pub fn reply(_deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, Contra
     }
 
     if let SubMsgResult::Ok(res) = reply.result {
-        let data = res.data.unwrap();
+        let res_data = res.data.unwrap();
+        let data = parse_execute_response_data(res_data.as_slice())
+            .unwrap()
+            .data
+            .unwrap();
         return Ok(Response::new()
             .set_data(data.clone())
             .add_attribute("reply_data", data.to_base64()));
